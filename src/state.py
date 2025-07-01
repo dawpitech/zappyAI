@@ -1,9 +1,20 @@
+from local_map import LocalMap
+
 class State:
-    def __init__(self, conditions=None):
-        self.conditions = conditions if conditions is not None else {
-            "id": 0,
-            "level": 1
-        }
+    def __init__(self, conditions=None, world_width=10, world_height=10):
+        if conditions is not None:
+            self.conditions = conditions.copy()
+        else:
+            self.conditions = {
+                "id": 0,
+                "level": 1,
+                "pos": (0, 0),
+                "dir": "N",
+                "inventory": {},
+                "map": LocalMap(world_width, world_height),
+                "tick": 0,
+            }
+
 
     def copy(self):
         return State(self.conditions.copy())
