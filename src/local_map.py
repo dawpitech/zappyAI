@@ -9,7 +9,9 @@ class LocalMap:
         }
 
     def update_tile(self, x, y, stones, players, tick):
-        self.tiles[(x, y)] = {
+        x_mod = x % self.width
+        y_mod = y % self.height
+        self.tiles[(x_mod, y_mod)] = {
             "stones": stones,
             "players": players,
             "last_seen": tick
