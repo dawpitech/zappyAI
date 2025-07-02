@@ -17,7 +17,10 @@ class State:
 
 
     def copy(self):
-        return State(self.conditions.copy())
+        new_conditions = self.conditions.copy()
+        new_conditions["inventory"] = self.conditions["inventory"].copy()
+        new_conditions["map"] = self.conditions["map"].clone()
+        return State(new_conditions)
 
     def __getitem__(self, key):
         return self.conditions.get(key, None)

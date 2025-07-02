@@ -19,6 +19,12 @@ class LocalMap:
 
     def get_tile(self, x, y):
         return self.tiles.get((x % self.width, y % self.height))
+    
+    def clone(self):
+        new_map = LocalMap(self.width, self.height)
+        new_map.tiles = {k: {"stones": v["stones"].copy(), "players": v["players"], "last_seen": v["last_seen"]}
+                        for k, v in self.tiles.items()}
+        return new_map
 
     def __repr__(self):
         return f"<LocalMap {self.width}x{self.height}>"
