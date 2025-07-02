@@ -1,4 +1,4 @@
-from action import Action
+from .action import Action
 
 class TakeObjectAction(Action):
     def __init__(self, object_name):
@@ -13,7 +13,12 @@ class TakeObjectAction(Action):
     def apply(self, state):
         new_state = state.copy()
         inv = new_state["inventory"].copy()
-        inv[self.object_name] = inv.get(self.object_name, 0) + 1
+
+        if self.object_name == "food":
+            inv["food"] = inv.get("food", 0) + 126
+        else:
+            inv[self.object_name] = inv.get(self.object_name, 0) + 1
+
         new_state["inventory"] = inv
 
         tile = new_state["map"].get_tile(*state["pos"]).copy()

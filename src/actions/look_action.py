@@ -1,3 +1,5 @@
+from .action import Action
+
 class LookAction(Action):
     def __init__(self):
         super().__init__("Look", cost=1)
