@@ -7,8 +7,19 @@ class TakeObjectAction(Action):
         self.preconditions = {f"tile_has_{object_name}": True}
 
     def is_applicable(self, state):
-        tile = state["map"].get_tile(*state["pos"])
-        return tile and tile["stones"].get(self.object_name, 0) > 0
+        pos = state["pos"]
+        tile = state["map"].get_tile(*pos)
+        if not tile:
+            return False
+
+        count = tile["stones"].get(self.object_name, 0)
+        if count == 0:
+            return False
+
+        if tile["last_seen"] < state["tick"] - 20:
+            return False
+
+        return True
 
     def apply(self, state):
         new_state = state.copy()
