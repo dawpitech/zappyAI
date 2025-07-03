@@ -2,7 +2,7 @@ from .action import Action
 
 class TurnLeftAction(Action):
     def __init__(self):
-        super().__init__("turn_left", cost=1)
+        super().__init__("turn_left", cost=7)
         self.preconditions = {}
 
     def apply(self, state):

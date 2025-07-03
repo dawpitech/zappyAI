@@ -2,7 +2,7 @@ from .action import Action
 
 class TakeObjectAction(Action):
     def __init__(self, object_name):
-        super().__init__(name=f"Take_{object_name}", cost=1)
+        super().__init__(name=f"Take_{object_name}", cost=7)
         self.object_name = object_name
         self.preconditions = {f"tile_has_{object_name}": True}
 

@@ -2,7 +2,7 @@ from .action import Action
 
 class MoveForwardAction(Action):
     def __init__(self):
-        super().__init__("move_forward", cost=1)
+        super().__init__("move_forward", cost=7)
         self.preconditions = {}  # Aucune condition particulière pour avancer
         # On ne définit pas d'effet fixe ici car la position dépend de la direction
     

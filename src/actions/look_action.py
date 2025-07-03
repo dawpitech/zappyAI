@@ -2,7 +2,7 @@ from .action import Action
 
 class LookAction(Action):
     def __init__(self):
-        super().__init__("Look", cost=1)
+        super().__init__("Look", cost=7)
 
     def execute(self, agent):
         print("look")
