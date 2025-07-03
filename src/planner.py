@@ -25,6 +25,21 @@ class Planner:
         return 0
 
     def plan(self, start_state, goal, max_iterations=1000):
+        if not goal.is_reached(start_state):
+            if hasattr(goal, "get_subgoal"):
+                subgoal = goal.get_subgoal(start_state)
+                if subgoal:
+                    return self.plan(start_state, subgoal, max_iterations)
+
+            if hasattr(goal, "get_desired_state"):
+                desired_state = goal.get_desired_state(start_state)
+                if desired_state is None:
+                    return None
+            else:
+                desired_state = None
+        else:
+            return []
+
         open_list = []
         closed_set = set()
 
@@ -37,12 +52,12 @@ class Planner:
             current_node = heapq.heappop(open_list)
             current_state_tuple = current_node.state.to_tuple()
 
-            if goal.is_reached(current_node.state):
-                return self.reconstruct_plan(current_node)
-
             if current_state_tuple in closed_set:
                 continue
             closed_set.add(current_state_tuple)
+
+            if goal.is_reached(current_node.state):
+                return self.reconstruct_plan(current_node)
 
             for action in self.actions:
                 if not action.is_applicable(current_node.state):
