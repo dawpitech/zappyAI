@@ -10,7 +10,7 @@ class State:
                 "level": 1,
                 "pos": (0, 0),
                 "dir": "N",
-                "inventory": {},
+                "inventory": {"food": 1260},
                 "map": LocalMap(world_width, world_height),
                 "tick": 0,
             }
