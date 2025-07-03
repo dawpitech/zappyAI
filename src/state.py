@@ -35,4 +35,12 @@ class State:
         return f"State({self.conditions})"
 
     def to_tuple(self):
-        return tuple(sorted(self.conditions.items()))
+        items = []
+        for key, value in self.conditions.items():
+            if key == "map":
+                continue
+            if isinstance(value, dict):
+                items.append((key, tuple(sorted(value.items()))))
+            else:
+                items.append((key, value))
+        return tuple(sorted(items))
