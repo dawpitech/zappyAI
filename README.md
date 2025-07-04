@@ -1,204 +1,300 @@
-# Zappy Server
+# Zappy AI - Python Implementation
 
-A server, created in C, that generates the inhabitants’ world.
+A sophisticated AI client for the Zappy game using Goal-Oriented Action Planning (GOAP) and the F.U.C.K. protocol for inter-AI communication.
+
+## Overview
+
+This AI implementation controls a Trantorian drone in the Zappy world, aiming to reach the maximum elevation level (8) through strategic resource gathering, team coordination, and efficient incantation rituals.
+
+## Features
+
+- **GOAP-based Decision Making**: Uses Goal-Oriented Action Planning for intelligent behavior
+- **Inter-AI Communication**: Implements the F.U.C.K. protocol for coordinated team strategies
+- **Resource Management**: Efficient food and stone collection algorithms
+- **Elevation Strategy**: Optimized incantation planning and execution
+- **Team Coordination**: Collaborative elevation rituals with other team members
+
+## Architecture
+
+### Core Components
+
+1. **GOAP Engine** (`goap/`)
+   - Goal-based action planning system
+   - Dynamic priority adjustment
+   - State management and action execution
+
+2. **Protocol Handler** (`protocol/`)
+   - F.U.C.K. protocol implementation
+   - Message encoding/decoding with Caesar cipher
+   - Coordinate-based message interpretation
+
+3. **Game Logic** (`game/`)
+   - Zappy game state management
+   - Resource tracking and inventory management
+   - Vision and sound processing
+
+4. **AI Controller** (`ai/`)
+   - Main AI decision loop
+   - Action execution and response handling
+   - Team coordination strategies
+
+## F.U.C.K. Protocol Implementation
+
+### Message Structure
+
+The AI uses the Federated Unified Chat Knowledge (F.U.C.K.) protocol for secure inter-AI communication:
+
+```json
+{
+  "s": "IA3",           // Sender ID
+  "p": "encoded_msg",   // Caesar-encoded payload
+  "mid": "14826"        // Message ID
+}
+```
+
+### Message Types
+
+Based on coordinate modulo 6:
+
+| Type | Meaning | Additional Data |
+|------|---------|----------------|
+| 0 | "I'm born" | None |
+| 1 | "Provide latest message IDs and AI ID" | `[id1, id2, ...],IAid` |
+| 2 | "I have evolved to N" | Evolution level: `N` |
+| 3 | "I need specific resources" | `[resource: amount, ...]` |
+| 4 | "I am going to evolve" | Target level: `N` |
+| 5 | "I'm alive" | None |
+
+### Caesar Cipher Key
+
+The protocol uses a sophisticated mathematical formula to generate the Caesar cipher key:
+
+```
+key = F(U+C)K+TH + I+S
+```
+
+Where each variable represents a complex mathematical expression involving:
+- Trigonometric functions and constants
+- Definite integrals
+- Infinite series
+- Special functions (Dilogarithm, Binomial coefficients)
+
+## GOAP Implementation
+
+### Goals
+
+- **Survive**: Maintain food levels above critical threshold
+- **Collect Resources**: Gather stones needed for elevation
+- **Evolve**: Reach higher elevation levels
+- **Coordinate**: Assist team members in elevation rituals
+
+### Actions
+
+- **Movement**: Navigate efficiently across the map
+- **Resource Collection**: Pick up food and stones
+- **Broadcasting**: Communicate with team members
+- **Incantation**: Initiate elevation rituals
+- **Ejection**: Remove competitors from strategic locations
+
+### Planning Algorithm
+
+The GOAP planner evaluates:
+1. Current world state
+2. Available actions and their preconditions
+3. Goal priorities and costs
+4. Optimal action sequence to achieve goals
+
+## Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd zappy/ai
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install the AI package
+pip install -e .
+```
 
 ## Usage
 
-```sh
-USAGE: ./zappy_server -p port -x width -y height -n name1 name2 ... -c clientsNb -f freq --auto-start on|off --display-eggs true|false [-v | --verbose]
-	port		is the port number
-	width		is the width of the world
-	height		is the height of the world
-	nameX		is the name of the team X
-	clientsNb	is the number of authorized clients per team
-	freq		is the reciprocal of time unit for execution of actions
-	auto-start	does the greeting is send automaticly #(see bonus part)
-	display-eggs	eggs are visible and destructible
+### Basic Usage
+
+```bash
+./zappy_ai -p <port> -n <team_name> -h <hostname>
 ```
 
+### Parameters
 
-The server is executed in the form of one, single process and one, single thread.
-It must use select to handle socket multiplexing; the select must unlock only if something happen on a
-socket or if an event is ready to be executed.
+- `-p port`: Server port number
+- `-n name`: Team name for authentication
+- `-h machine`: Server hostname (default: localhost)
 
+### Example
 
-> The team name GRAPHIC is reserved for the GUI to authenticate itself as such to the server.
+```bash
+# Connect to local server on port 4242 with team "Epitech"
+./zappy_ai -p 4242 -n Epitech -h localhost
+```
 
+## Configuration
 
-## AI protocol
+### AI Parameters
 
-Each player responds to the following actions and only to these ones, with the following syntax :
+Edit `config/ai_config.py`:
 
-|            Action            |       Command      | Time limit |                 Response                 |
-|:----------------------------:|:------------------:|:----------:|:----------------------------------------:|
-|       move up one tile       |     __Forward__    |     7/f    |                    ok                    |
-|        turn 90° right        |      __Right__     |     7/f    |                    ok                    |
-|         turn 90° left        |      __Left__      |     7/f    |                    ok                    |
-|          look around         |      __Look__      |     7/f    |            [tile1, tile2,...]            |
-|           inventory          |    __Inventory__   |     1/f    |        [linemate n, sibur n, ...]        |
-|        broadcast text        | __Broadcast text__ |     7/f    |                    ok                    |
-|  number of team unused slots |   __Connect_nbr__  |      -     |                   value                  |
-|         fork a player        |      __Fork__      |    42/f    |                    ok                    |
-| eject players from this tile |      __Eject__     |     7/f    |                   ok/ko                  |
-|       death of a player      |         _-_        |      -     |                   dead                   |
-|          take object         |   __Take object__  |     7/f    |                   ok/ko                  |
-|        set object down       |   __Set object__   |     7/f    |                   ok/ko                  |
-|       start incantation      |   __Incantation__  |    300/f   | Elevation underway | Current level: k/ko |
+```python
+# GOAP Configuration
+GOAP_PLANNING_DEPTH = 10
+GOAP_REPLANNING_INTERVAL = 5.0
 
+# Survival Parameters
+CRITICAL_FOOD_THRESHOLD = 50
+OPTIMAL_FOOD_LEVEL = 200
 
-> In case of a bad/unknown command, the server must answer “ko”.
+# Communication Settings
+BROADCAST_INTERVAL = 30.0
+PROTOCOL_ENCRYPTION = True
+```
 
+### Protocol Settings
 
-The AI client’s connection to the server happens as follows:
+Edit `config/protocol_config.py`:
 
-    1. the client opens a socket on the server’s port,
+```python
+# F.U.C.K. Protocol Configuration
+CAESAR_KEY_FORMULA = True  # Use mathematical formula for key
+FALLBACK_CAESAR_KEY = 13   # Fallback if formula fails
+MESSAGE_TIMEOUT = 10.0
+MAX_RETRIES = 3
+```
 
-    2. the server and the client communicate the following way:
-        Server --> WELCOME\n
-               <-- TEAM-NAME\n
-               --> game informations (see tha above array)
+## Development
 
-X and Y indicate the world’s dimensions.
+### Project Structure
 
-CLIENT-NUM indicates the number of slots available on the server for the TEAM-NAME team. If this number is greater than or equal to 1, a new client can connect.
+```
+zappy_ai/
+├── app
+│   └── zappyAI.py
+├── README.md
+├── Share
+│   └── OpenSans Regular.ttf
+└── src
+    ├── actions
+    │   ├── action.py
+    │   ├── look_action.py
+    │   ├── move_forward_action.py
+    │   ├── take_object_action.py
+    │   ├── turn_left_action.py
+    │   └── turn_right_action.py
+    ├── goals
+    │   ├── explore_goal.py
+    │   ├── find_food_goal.py
+    │   ├── goal.py
+    │   └── survive_goal.py
+    ├── local_map.py
+    ├── planner.py
+    ├── state.py
+    ├── test.py
+    └── Trantorien.py
+```
 
-> The client can send up to 10 requests in a row without any response from the server. Over 10, the server will drop the incomming commands.
+### Adding New Actions
 
-The server executes the client’s requests in the order they were received.
+1. Define the action in `src/actions/`:
 
-The requests are buffered and a command’s execution time only blocks the player in question.
+```python
+class NewAction(Action):
+    def __init__(self):
+        super().__init__("new_action")
+        self.preconditions = {"condition": True}
+        self.effects = {"result": True}
+        self.cost = 1.0
 
-Trantorians have adopted an international time unit.
-The time unit is seconds.
+    def execute(self, agent, world_state):
+        # Implementation
+        pass
+```
 
-An action’s execution time is calculated with the following formula:
+2. Register the action in the planner
+3. Add tests for the new action
 
-action / f
+## Advanced Features
 
-Where f is an integer representing the reciprocal (multiplicative inverse) of time unit.
+### Team Coordination
 
-For instance, if f=1, “forward” takes 7 / 1 = 7 seconds.
+The AI implements sophisticated team coordination:
 
-By default f=100.
+- **Resource Sharing**: Alerts team members about resource locations
+- **Elevation Coordination**: Organizes multi-player incantation rituals
+- **Strategic Positioning**: Coordinates territorial control
 
+### Adaptive Behavior
 
-## GUI protocol
+- **Dynamic Goal Prioritization**: Adjusts goals based on world state
+- **Learning from Failures**: Improves strategies based on outcomes
+- **Environmental Adaptation**: Responds to changing world conditions
 
+### Security Features
 
-| SYMBOL |               MEANING               |
-|:------:|:-----------------------------------:|
-|    X   |     width or horizontal position    |
-|    Y   |     height or vertical position     |
-|   q0   |      resource 0 (food) quantity     |
-|   q1   |    resource 1 (linemate) quantity   |
-|   q2   |   resource 2 (deraumere) quantity   |
-|   q3   |     resource 3 (sibur) quantity     |
-|   q4   |    resource 4 (mendiane) quantity   |
-|   q5   |     resource 5 (phiras) quantity    |
-|   q6   |    resource 6 (thystame) quantity   |
-|    n   |            player number            |
-|    O   | orientation: 1(N), 2(E), 3(S), 4(W) |
-|    L   |     player or incantation level     |
-|    e   |              egg number             |
-|    T   |              time unit              |
-|    N   |           name of the team          |
-|    R   |          incantation result         |
-|    M   |               message               |
-|    i   |           resource number           |
+- **Encrypted Communications**: Uses F.U.C.K. protocol encryption
+- **Message Authentication**: Verifies message integrity
+- **Anti-Griefing**: Detects and responds to hostile behavior
 
-<br>
+## Performance Optimization
 
-|                   SERVER                   |   CLIENT  |                    DETAILS                    |    TO A GUI client    |    TO ALL GUI client    |
-|:------------------------------------------:|:---------:|:---------------------------------------------:|:---------------------:|:-----------------------:|
-|                  msz X Y\n                 |   msz\n   |                   map size                    | new GUI client connection or msz command | |
-|       bct X Y q0 q1 q2 q3 q4 q5 q6\n       | bct X Y\n |               content of a tile               | bct command | |
-| bct X Y q0 q1 q2 q3 q4 q5 q6\n * nbr_tiles |   mct\n   |       content of the map (all the tiles)      | new GUI client connection or mct command or map refill | |
-|             tna N\n * nbr_teams            |   tna\n   |             name of all the teams             | new GUI client connection | |
-|             pnw #n X Y O L N\n             |           |           connection of a new player          | new GUI client connection | new AI client connection |
-|                ppo #n X Y O\n              |  ppo #n\n |               player’s position               | ppo command | AI left, right forward action or AI is ejected |
-|                  plv #n L\n                |  plv #n\n |                 player’s level                | new GUI client connection or plv command | AI sucessfully incantate |
-|      pin #n X Y q0 q1 q2 q3 q4 q5 q6\n     |  pin #n\n |               player’s inventory              | new GUI client connection or pin command | new AI client connection or AI set, take action or AI lost food |
-|                   pex #n\n                 |           |                   expulsion                   | | AI eject action |
-|                  pbc #n M\n                |           |                   broadcast                   | | AI broadcast action |
-|             pic X Y L #n #n ...\n          |           | start of an incantation (by the first player) | | AI incantation action |
-|                 pie X Y R\n                |           |             end of an incantation             | | AI incatation end |
-|                  pfk #n\n                  |           |            egg laying by the player           | | AI fork action |
-|                  pdr #n i\n                |           |               resource dropping               | | AI set action |
-|                  pgt #n i\n                |           |              resource collecting              | | AI take action |
-|                  pdi #n\n                  |           |               death of a player               | | AI client disconnection or AI lost all it's food |
-|                enw #e #n X Y\n             |           |          an egg was laid by a player          | new GUI client connection | AI fork action end (after 42/f) |
-|                   ebo #e\n                 |           |          player connection for an egg         | | new AI client connection |
-|                   edi #e\n                 |           |                death of an egg                | | egg is ejected by an AI |
-|                   sgt T\n                  |   sgt\n   |               time unit request               | new GUI client connection or sgt | sst command |
-|                   sst T\n                  |  sst T\n  |             time unit modification            | | |
-|                   seg N\n                  |           |                  end of game                  | | an AI team reach the victory conditions |
-|                   smg M\n                  |           |            message from the server            | | server send a message |
-|                    suc\n                   |           |                unknown command                | | empty or unknown command |
-|                    sbp\n                   |           |               command parameter               | | invalid command (wrong parameter.s) |
-<br>
+### Efficient Pathfinding
 
-The GUI client’s connection to the server happens as follows:
+- **A* Algorithm**: Optimal path planning
+- **Cached Routes**: Reuses computed paths
+- **Dynamic Obstacles**: Adapts to world changes
 
-    1. the client opens a socket on the server’s port,
+### Resource Optimization
 
-    2. the server and the client communicate the following way:
-        Server --> WELCOME\n
-               <-- GRAPHIC\n
-               --> game informations (see the above array)
+- **Memory Management**: Efficient state representation
+- **Network Optimization**: Minimizes bandwidth usage
+- **CPU Optimization**: Optimized GOAP planning
 
+## Troubleshooting
 
-## Informations
+### Common Issues
 
+1. **Connection Failed**
+   - Check server availability
+   - Verify port and hostname
+   - Ensure team name is correct
 
-### Incantations
+2. **Protocol Errors**
+   - Verify F.U.C.K. protocol implementation
+   - Check Caesar cipher key calculation
+   - Validate message format
 
+3. **GOAP Planning Issues**
+   - Increase planning depth
+   - Check action preconditions
+   - Verify world state accuracy
 
-This ritual, which augments physical and mental capacities, must be done according to a particular rite: they
-must gather the following on the same unit of terrain:
+## Contributing
 
-- At least a certain number of each stones
-- At least a certain number of players with the same level
+1. Fork the repository
+2. Create a feature branch
+3. Implement your changes
+4. Add tests
+5. Submit a pull request
 
-The elevation begins as soon as a player initiates the incantation.
-The player who starts an incantation will receive ko if all the requirements are not satisfied and the incantation will be canceled, the player will receive the ko instantly after the initial server check (not at the end of the incantation duration).
+## License
 
-It is not necessary for the players to be on the same team; they only need to be of the same level.
-Every player with the corresponding level and present at the beginning and at the end of the incantation attain the higher level.
+This project is part of the Epitech Zappy project and follows the school's academic guidelines.
 
-During the incantation, the participants can not make any action until the end of the rite.
+## Authors
 
-At the end of the incantation, the exact quantity of resources needed by the rite are consumed.
+- **Team**: Louka ORTEGA CAND | Antton DUCOS | Antoine BELANGER | Maxime GOYHENECHE | Remy THAI
+- **Protocol**: F.U.C.K. Protocol Implementation
+- **AI Engine**: GOAP-based Decision Making
 
+## References
 
-## Bonus
-
-
-### Server commands
-
-
-The server accepts command in its standard input.
-
-
-|     Command    |           Effect           |
-|:--------------:|:--------------------------:|
-|    /clients    | list all connected clients |
-|      /quit     |       stop the server      |
-|  /send_ais msg |   send messages to all AI  |
-| /send_guis msg |  send messages to all GUI  |
-|      /map      |  display map informations  |
-|     /clear     |       clear the shell      |
-|     /pause     |   pause the AI's actions   |
-|     /start     |      start the server      |
-| /setTile ressource quantity x y | set the given ressource quantity of a tile |
-| /tile x y | get the inventory of a tile |
-| /tp id x y | tp an AI by it's id |
-| /kill id | kill an AI by it's id |
-| /noFood true or false | disable the food management |
-| /broadcast "message" x y | simulate a broadcast |
-| /setLevel id level | set the level of an AI by it's id |
-| /setInventory id ressource quantity | set the given ressource quantity inside an AI inventory by it's id |
-| /setClientsNb nb | set the minimum number of AI per team |
-| /setFreq freq | set the frequency of the server |
-| /noRefill true or false | disable the map refill |
-| /fork team x y | simulate a fork for the given team at the given position |
-| /incantate x y | simulate an incantation of the given level at the given position |
+- [GOAP Algorithm Documentation](https://en.wikipedia.org/wiki/Goal-oriented_action_planning)
