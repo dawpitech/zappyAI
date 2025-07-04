@@ -4,10 +4,17 @@ from .explore_goal import ExploreGoal
 class FindFoodGoal(Goal):
     def __init__(self):
         super().__init__("FindFood", priority=8)
+        self.initial_food_amount = None
 
     def is_reached(self, state):
-        tile = state["map"].get_tile(*state["pos"])
-        return tile and tile["stones"].get("food", 0) > 0
+        current_food = state["inventory"].get("food", 0)
+        if self.initial_food_amount is not None and current_food > self.initial_food_amount:
+            return True
+        return False
+
+    def update_priority(self, state):
+        if self.initial_food_amount is None:
+            self.initial_food_amount = state["inventory"].get("food", 0)
 
     def get_subgoal(self, state):
         if not self._food_known_on_map(state):
@@ -18,7 +25,6 @@ class FindFoodGoal(Goal):
         best = self._find_nearest_food(state)
         if not best:
             return None
-
         desired = state.copy()
         desired["pos"] = best["pos"]
         return desired

@@ -25,6 +25,8 @@ class Planner:
         return 0
 
     def plan(self, start_state, goal, max_iterations=1000):
+        goal.update_priority(start_state)
+
         if not goal.is_reached(start_state):
             if hasattr(goal, "get_subgoal"):
                 subgoal = goal.get_subgoal(start_state)
