@@ -37,6 +37,8 @@ class TakeObjectAction(Action):
         stones[self.object_name] = max(0, stones.get(self.object_name, 1) - 1)
         tile["stones"] = stones
         new_state["map"].update_tile(*state["pos"], stones=stones, players=tile["players"], tick=new_state["tick"])
+        cost = self.compute_cost(state)
+        new_state["inventory"]["food"] = max(0, new_state["inventory"].get("food", 0) - cost)
 
         return new_state
 
