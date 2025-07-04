@@ -1,14 +1,29 @@
 from .goal import Goal
 
 class ExploreGoal(Goal):
-    def __init__(self, resource_name: str, freshness_threshold=20, max_distance=5):
+    def __init__(self, resource_name: str, freshness_threshold=71, max_distance=5):
         super().__init__(f"Explore_{resource_name}", priority=4)
         self.resource_name = resource_name
         self.freshness_threshold = freshness_threshold
         self.max_distance = max_distance
 
     def is_reached(self, state):
-        return self._resource_known_on_map(state)
+        current_tile = state["map"].get_tile(*state["pos"])
+        if current_tile and current_tile["last_seen"] == state["tick"]:
+            return True
+        return False
+
+
+    def _resource_known_on_map(self, state):
+        tick = state["tick"]
+        game_map = state["map"]
+
+        for tile in game_map.tiles.values():
+            if tile["last_seen"] == -1 or tick - tile["last_seen"] > self.freshness_threshold:
+                continue
+            if tile["stones"].get(self.resource_name, 0) > 0:
+                return True
+        return False
 
     def _resource_known_on_map(self, state):
         tick = state["tick"]
@@ -25,6 +40,7 @@ class ExploreGoal(Goal):
     def get_desired_state(self, state):
         best = self._find_best_explore_look(state)
         if not best:
+            print("[DEBUG] Aucune position d'exploration intéressante trouvée.")
             return None
 
         desired = state.copy()

@@ -6,6 +6,9 @@ class TakeObjectAction(Action):
         self.object_name = object_name
         self.preconditions = {f"tile_has_{object_name}": True}
 
+    def execute(self, agent):
+        print(f"Take {self.object_name}")
+
     def is_applicable(self, state):
         pos = state["pos"]
         tile = state["map"].get_tile(*pos)
@@ -16,7 +19,7 @@ class TakeObjectAction(Action):
         if count == 0:
             return False
 
-        if tile["last_seen"] < state["tick"] - 20:
+        if tile["last_seen"] < state["tick"] - 71:
             return False
 
         return True
@@ -39,12 +42,9 @@ class TakeObjectAction(Action):
         new_state["map"].update_tile(*state["pos"], stones=stones, players=tile["players"], tick=new_state["tick"])
         cost = self.compute_cost(state)
         new_state["inventory"]["food"] = max(0, new_state["inventory"].get("food", 0) - cost)
+        new_state["tick"] += self.cost
 
         return new_state
-
-    def execute(self, agent):
-        print("Take")
-        #agent.queue_command(f"Take {self.object_name}")
 
     def __repr__(self):
         return f"<TakeObjectAction {self.object_name} (cost={self.cost})>"

@@ -3,8 +3,10 @@ from .action import Action
 class MoveForwardAction(Action):
     def __init__(self):
         super().__init__("move_forward", cost=7)
-        self.preconditions = {}  # Aucune condition particulière pour avancer
-        # On ne définit pas d'effet fixe ici car la position dépend de la direction
+        self.preconditions = {}
+
+    def execute(self, agent):
+        print("Forward")
     
     def apply(self, state):
         x, y = state["pos"]
@@ -23,8 +25,6 @@ class MoveForwardAction(Action):
         new_state["pos"] = (x, y)
         cost = self.compute_cost(state)
         new_state["inventory"]["food"] = max(0, new_state["inventory"].get("food", 0) - cost)
-        return new_state
+        new_state["tick"] += self.cost
 
-    def execute(self, agent):
-        print("Commande envoyée au serveur : Forward")
-        # agent.send_command("Forward\n")
+        return new_state
