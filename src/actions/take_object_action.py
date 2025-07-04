@@ -47,4 +47,4 @@ class TakeObjectAction(Action):
         #agent.queue_command(f"Take {self.object_name}")
 
     def __repr__(self):
-        return f"<TakeObjectAction {self.object_name}>"
+        return f"<TakeObjectAction {self.object_name} (cost={self.cost})>"
