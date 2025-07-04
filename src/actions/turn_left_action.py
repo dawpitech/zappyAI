@@ -16,6 +16,7 @@ class TurnLeftAction(Action):
         new_state["dir"] = new_dir
         cost = self.compute_cost(state)
         new_state["inventory"]["food"] = max(0, new_state["inventory"].get("food", 0) - cost)
+        new_state["tick"] += self.cost
         return new_state
 
     def execute(self, agent):

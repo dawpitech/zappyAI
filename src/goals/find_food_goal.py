@@ -32,7 +32,7 @@ class FindFoodGoal(Goal):
     def _food_known_on_map(self, state):
         tick = state["tick"]
         game_map = state["map"]
-        freshness_threshold = 20
+        freshness_threshold = 71
 
         for tile in game_map.tiles.values():
             if tile["last_seen"] == -1 or tick - tile["last_seen"] > freshness_threshold:
@@ -49,7 +49,7 @@ class FindFoodGoal(Goal):
         pos = state["pos"]
         width = game_map.width
         height = game_map.height
-        freshness_threshold = 20
+        freshness_threshold = 71
 
         visited = set()
         queue = deque()

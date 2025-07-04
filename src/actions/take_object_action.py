@@ -16,7 +16,7 @@ class TakeObjectAction(Action):
         if count == 0:
             return False
 
-        if tile["last_seen"] < state["tick"] - 20:
+        if tile["last_seen"] < state["tick"] - 71:
             return False
 
         return True
@@ -39,6 +39,7 @@ class TakeObjectAction(Action):
         new_state["map"].update_tile(*state["pos"], stones=stones, players=tile["players"], tick=new_state["tick"])
         cost = self.compute_cost(state)
         new_state["inventory"]["food"] = max(0, new_state["inventory"].get("food", 0) - cost)
+        new_state["tick"] += self.cost
 
         return new_state
 
