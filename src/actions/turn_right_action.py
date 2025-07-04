@@ -5,6 +5,9 @@ class TurnRightAction(Action):
         super().__init__("turn_right", cost=7)
         self.preconditions = {}
 
+    def execute(self, agent):
+        print("Right")
+
     def apply(self, state):
         direction = state["dir"]
         directions = ["N", "E", "S", "W"]
@@ -18,7 +21,3 @@ class TurnRightAction(Action):
         new_state["inventory"]["food"] = max(0, new_state["inventory"].get("food", 0) - cost)
         new_state["tick"] += self.cost
         return new_state
-
-    def execute(self, agent):
-        print("Commande envoyée au serveur : Right")
-        # agent.send_command("Right\n")

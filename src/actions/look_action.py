@@ -5,8 +5,7 @@ class LookAction(Action):
         super().__init__("Look", cost=7)
 
     def execute(self, agent):
-        print("look")
-        #agent.queue_command("Look")
+        print("Look")
     
     def apply(self, state):
         state["tick"] += self.cost
@@ -20,7 +19,14 @@ class LookAction(Action):
             tile["last_seen"] = tick
 
         return state
+    
+    def apply_agent(self, state, response_str):
+        state["tick"] += self.cost
+        state["inventory"]["food"] = max(0, state["inventory"].get("food", 0) - self.cost)
 
+        self.update_map_from_look_response(state, response_str)
+
+        return state
 
     def update_map_from_look_response(self, state, response_str):
         tiles_str = response_str.strip("[] \n").split(',')
@@ -38,6 +44,12 @@ class LookAction(Action):
             players = 0
             objects = tile_content.strip().split()
 
+        # Marque la position actuelle comme vue
+        tile = state["map"].get_tile(*state["pos"])
+        if tile:
+            tile["last_seen"] = state["tick"]
+
+        # Mise à jour des tuiles visibles
             for obj in objects:
                 if obj == "player":
                     players += 1
