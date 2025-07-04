@@ -13,7 +13,7 @@ class LookAction(Action):
         pos = state["pos"]
         map_ = state["map"]
         tick = state["tick"]
-        state["inventory"]["food"] = max(0, new_state["inventory"].get("food", 0) - cost)
+        state["inventory"]["food"] = max(0, state["inventory"].get("food", 0) - self.cost)
 
         tile = map_.get_tile(*pos)
         if tile:
