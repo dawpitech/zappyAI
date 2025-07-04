@@ -6,7 +6,7 @@ class MoveForwardAction(Action):
         self.preconditions = {}
 
     def execute(self, agent):
-        print("Forward")
+        agent.queue_command("Forward")
     
     def apply(self, state):
         x, y = state["pos"]

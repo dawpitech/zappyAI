@@ -6,7 +6,7 @@ class TurnLeftAction(Action):
         self.preconditions = {}
 
     def execute(self, agent):
-        print("Left")
+        agent.queue_command("Left")
 
     def apply(self, state):
         direction = state["dir"]
