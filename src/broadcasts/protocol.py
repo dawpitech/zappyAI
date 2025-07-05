@@ -1,3 +1,6 @@
+import random
+import string
+
 def decipherMessage(message) :
     msgList = caesarCipher(message, -1).split(':')
     result = coordsToInt(msgList[0])
@@ -43,6 +46,11 @@ def intToCoords(value):
 
 def caesarCipher(msg, n) :
     return ''.join(chr((ord(c) + n) % 128) for c in msg)
+
+def generate_token(length=6):
+    characters = string.ascii_letters + string.digits
+    token = ''.join(random.choice(characters) for _ in range(length))
+    return token
 
 if __name__ == "__main__":
     print(decipherMessage(cipherMessage("4:ji gou ji:")))
