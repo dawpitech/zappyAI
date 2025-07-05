@@ -10,10 +10,10 @@ class TurnLeftAction(Action):
 
     def apply(self, state):
         direction = state["dir"]
-        directions = ["N", "W", "S", "E"]
+        directions = ["N", "E", "S", "W"]
 
         idx = directions.index(direction)
-        new_dir = directions[(idx + 1) % len(directions)]
+        new_dir = directions[(idx - 1) % len(directions)]
 
         new_state = state.copy()
         new_state["dir"] = new_dir
