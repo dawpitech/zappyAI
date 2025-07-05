@@ -5,7 +5,7 @@ class LookAction(Action):
         super().__init__("Look", cost=7)
 
     def execute(self, agent):
-        print("Look")
+        agent.queue_command("Look")
     
     def apply(self, state):
         state["tick"] += self.cost
@@ -44,23 +44,19 @@ class LookAction(Action):
             players = 0
             objects = tile_content.strip().split()
 
-        # Marque la position actuelle comme vue
-        tile = state["map"].get_tile(*state["pos"])
-        if tile:
-            tile["last_seen"] = state["tick"]
-
-        # Mise à jour des tuiles visibles
             for obj in objects:
                 if obj == "player":
                     players += 1
                 else:
                     stones[obj] = stones.get(obj, 0) + 1
 
-            x, y = visible_positions[i]
+            if i < len(visible_positions):
+                x, y = visible_positions[i]
+                tile = map_.get_tile(x, y)
+                if tile:
+                    tile["last_seen"] = tick
+                    map_.update_tile(x, y, stones, players, tick)
 
-            map_.update_tile(x, y, stones, players, tick)
-
-        
         return state
 
     @staticmethod
@@ -87,11 +83,9 @@ class LookAction(Action):
             center_y = y + forward[1] * dist
 
             for offset in range(-dist, dist + 1):
-                tile_x = center_x + left[0] * offset
-                tile_y = center_y + left[1] * offset
+                tile_x = (center_x + left[0] * offset) % width
+                tile_y = (center_y + left[1] * offset) % height
                 positions.append((tile_x, tile_y))
 
         return positions
-    
-    def __repr__(self):
-        return f"<LookAction (cost={self.cost})>"
+

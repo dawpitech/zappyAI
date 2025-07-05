@@ -6,7 +6,7 @@ class TurnRightAction(Action):
         self.preconditions = {}
 
     def execute(self, agent):
-        print("Right")
+        agent.queue_command("Right")
 
     def apply(self, state):
         direction = state["dir"]

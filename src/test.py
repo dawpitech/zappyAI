@@ -1,55 +1,122 @@
+#!/usr/bin/env python3
+
+import socket
+import select
+import sys
+import argparse
+import time
+
+from agent import Agent
 from planner import Planner
-from actions.move_forward_action import MoveForwardAction
-from actions.turn_left_action import TurnLeftAction
-from actions.turn_right_action import TurnRightAction
-from actions.take_object_action import TakeObjectAction
-from actions.look_action import LookAction
 from state import State
-from goals.survive_goal import SurviveGoal
-from local_map import LocalMap
+from actions.actions import ACTIONS
+from goals.goals import GOALS
+from goals.goals import SurviveGoal
 
-# --- Setup initial ---
-world_width = 5
-world_height = 5
-local_map = LocalMap(world_width, world_height)
 
-initial_state = State(world_width=world_width, world_height=world_height)
-initial_state["pos"] = (0, 0)
-initial_state["dir"] = "E"
-initial_state["inventory"] = {"food": 1260}
-initial_state["map"] = local_map
-initial_state["tick"] = 0
+def parse_args():
+    parser = argparse.ArgumentParser(description="Zappy AI Client", add_help=False)
+    parser.add_argument("-p", type=int, required=True, help="port number")
+    parser.add_argument("-n", type=str, required=True, help="team name")
+    parser.add_argument("-h", type=str, default="localhost", help="server host")
+    return parser.parse_args()
 
-actions = [
-    MoveForwardAction(),
-    TurnLeftAction(),
-    TurnRightAction(),
-    TakeObjectAction("food"),
-    LookAction()
-]
 
-goal = SurviveGoal()
+def connect_to_server(host, port, team_name):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, port))
 
-planner = Planner(actions)
+    sock.setblocking(True)
 
-# --- Simuler un look ---
-look_action = LookAction()
-state_after_look = look_action.apply(initial_state.copy())
+    buffer = ""
 
-# Simuler la réponse du serveur au look, avec de la nourriture sur la tile (1,0)
-fake_look_response = "[player, , , food]"  # suppose on regarde 5 tiles, la 1ere a de la food + player
-state_after_look = look_action.update_map_from_look_response(state_after_look, fake_look_response)
+    def recv_line():
+        nonlocal buffer
+        while '\n' not in buffer:
+            data = sock.recv(4096).decode()
+            if not data:
+                raise ConnectionError("Connexion fermée par le serveur")
+            buffer += data
+        line, buffer = buffer.split('\n', 1)
+        return line.strip(), buffer
 
-print("Map tiles après look :")
-for pos, tile in state_after_look["map"].tiles.items():
-    print(f"Tile {pos}: stones={tile['stones']}, players={tile['players']}, last_seen={tile['last_seen']}")
+    line, buffer = recv_line()
+    if line != "WELCOME":
+        raise RuntimeError(f"[ERROR] Protocole inattendu : attendu 'WELCOME', reçu '{line}'")
 
-# --- Planifier après mise à jour de la map ---
-plan = planner.plan(state_after_look, goal)
+    sock.sendall((team_name + "\n").encode())
 
-if plan:
-    print("\nPlan trouvé après look et mise à jour de carte :")
-    for action in plan:
-        print("-", action)
-else:
-    print("Aucun plan trouvé après mise à jour de la carte.")
+    client_num_line, buffer = recv_line()
+    try:
+        client_num = int(client_num_line)
+        if client_num <= 0:
+            raise RuntimeError(f"[ERROR] Pas de slot disponible pour l'équipe '{team_name}'")
+    except ValueError:
+        raise RuntimeError(f"[ERROR] Réponse client_num invalide : {client_num_line}")
+
+    map_line, buffer = recv_line()
+    try:
+        x, y = map(int, map_line.strip().split())
+    except ValueError:
+        raise RuntimeError(f"[ERROR] Dimensions de carte invalides : '{map_line}'")
+
+    print(f"[INFO] Connecté. Carte: {x}x{y} | Slots restants: {client_num}", file=sys.stderr)
+
+    sock.setblocking(False)
+    return sock, x, y, buffer
+
+
+
+def main():
+    args = parse_args()
+
+    try:
+        sock, world_width, world_height, leftover_buffer = connect_to_server(args.h, args.p, args.n)
+    except Exception as e:
+        print(f"[CRITICAL] Échec connexion : {e}", file=sys.stderr)
+        return
+
+    state = State(world_width=world_width, world_height=world_height)
+    agent = Agent(state, Planner(ACTIONS))
+    agent.set_goal(SurviveGoal())
+
+    buffer = leftover_buffer
+
+    while True:
+        try:
+                agent.tick()
+
+                readable, _, _ = select.select([sock], [], [], 0.01)
+                for s in readable:
+                    data = s.recv(4096).decode()
+                    if not data:
+                        print("[ERROR] Connexion perdue", file=sys.stderr)
+                        return
+                    buffer += data
+                    while '\n' in buffer:
+                        line, buffer = buffer.split('\n', 1)
+                        agent.receive_message(line.strip())
+                        print(line, file=sys.stderr)
+
+                if agent.has_command() and agent.waiting_for_response:
+                    cmd = agent.next_command()
+                    if cmd:
+                        try:
+                            sock.sendall((cmd + "\n").encode())
+                            print(f"[DEBUG] Commande envoyée : {cmd}", file=sys.stderr)
+                        except Exception as e:
+                            print(f"[ERROR] Envoi échoué : {e}", file=sys.stderr)
+
+                time.sleep(0.005)
+
+        except KeyboardInterrupt:
+            print("[INFO] Interruption utilisateur", file=sys.stderr)
+            break
+        except Exception as e:
+            print(f"[CRASH] Exception non gérée : {e}", file=sys.stderr)
+            break
+
+
+if __name__ == "__main__":
+    main()
+

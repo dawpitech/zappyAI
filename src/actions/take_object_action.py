@@ -7,7 +7,7 @@ class TakeObjectAction(Action):
         self.preconditions = {f"tile_has_{object_name}": True}
 
     def execute(self, agent):
-        print(f"Take {self.object_name}")
+        agent.queue_command(f"Take {self.object_name}")
 
     def is_applicable(self, state):
         pos = state["pos"]
