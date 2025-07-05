@@ -42,7 +42,7 @@ class Agent:
             self.waiting_for_response = True
 
     def handle_response(self, message):
-        print(f"[RECV] {message}", file=sys.stderr)
+        # print(f"[RECV] {message}", file=sys.stderr)
 
         if message.startswith("message"):
             direction, text = self.parse_broadcast(message)

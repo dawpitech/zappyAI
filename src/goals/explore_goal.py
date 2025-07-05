@@ -8,34 +8,19 @@ class ExploreGoal(Goal):
         self.max_distance = max_distance
 
     def is_reached(self, state):
-        current_tile = state["map"].get_tile(*state["pos"])
-        if current_tile and current_tile["last_seen"] == state["tick"]:
+        desired = self.get_desired_state(state)
+        if desired is None:
             return True
-        return False
 
+        if desired["pos"] != state["pos"]:
+            return False
+        if desired["dir"] != state["dir"]:
+            return False
+        current_tile = state["map"].get_tile(*state["pos"])
+        if not current_tile or not current_tile["last_seen"] == state["tick"]:
+            return False
 
-    def _resource_known_on_map(self, state):
-        tick = state["tick"]
-        game_map = state["map"]
-
-        for tile in game_map.tiles.values():
-            if tile["last_seen"] == -1 or tick - tile["last_seen"] > self.freshness_threshold:
-                continue
-            if tile["stones"].get(self.resource_name, 0) > 0:
-                return True
-        return False
-
-    def _resource_known_on_map(self, state):
-        tick = state["tick"]
-        game_map = state["map"]
-
-        for tile in game_map.tiles.values():
-            if tile["last_seen"] == -1 or tick - tile["last_seen"] > self.freshness_threshold:
-                continue
-            if tile["stones"].get(self.resource_name, 0) > 0:
-                return True
-        return False
-
+        return True
 
     def get_desired_state(self, state):
         best = self._find_best_explore_look(state)
