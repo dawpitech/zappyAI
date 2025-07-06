@@ -8,7 +8,7 @@ class SurviveGoal(Goal):
 
     def is_reached(self, state):
         food = state["inventory"].get("food", 0)
-        return food > 6000
+        return False #food > 6000
 
     def update_priority(self, state):
         food = state["inventory"].get("food", 0)

@@ -35,8 +35,7 @@ class IncantationAction(Action):
             if tile["stones"].get(stone, 0) < qty:
                 return False
 
-        same_level_players = sum(1 for p in tile["players"] if p == level)
-        if same_level_players < requirements["players"]:
+        if tile["players"] < requirements["players"]:
             return False
 
         return True

@@ -33,7 +33,7 @@ class Agent:
         if not self.current_plan and self.goal:
             self.current_plan = self.planner.plan(self.state, self.goal)
             if not self.current_plan:
-                print("[WARN] Aucun plan trouvé", file=sys.stderr)
+                # print("[WARN] Aucun plan trouvé", file=sys.stderr)
                 return
 
         if self.current_plan:

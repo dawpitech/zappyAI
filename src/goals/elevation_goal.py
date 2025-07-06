@@ -5,13 +5,13 @@ from .have_players_on_tile_goal import HavePlayersOnTileGoal
 class ElevationGoal(Goal):
     def __init__(self):
         super().__init__(name=f"Elevate", priority=9)
-        self.initial_level = 1
+        self.initial_level = 0
 
     def is_reached(self, state):
         return state["level"] >= self.initial_level + 1
 
     def update_priority(self, state):
-        self.priority = 9 if state["level"] == self.initial_level else 0
+        self.priority = 9
 
     def get_subgoal(self, state):
         if state["level"] != self.initial_level:
@@ -19,11 +19,10 @@ class ElevationGoal(Goal):
 
         if not self._has_required_resources(state):
             return HaveRequiredResourcesGoal(self.initial_level)
-
         return HavePlayersOnTileGoal(self.initial_level)
 
     def get_desired_state(self, state):
-        self.initial_level = state["level"] + 1
+        self.initial_level = state["level"]
         return {"level": self.initial_level}
 
     def _has_required_resources(self, state):
