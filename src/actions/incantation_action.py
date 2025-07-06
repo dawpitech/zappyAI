@@ -16,6 +16,7 @@ class IncantationAction(Action):
         self.level_target = None
 
     def execute(self, agent):
+        print("===========================================there==============================================")
         agent.queue_command("Incantation")
 
     def is_applicable(self, state):

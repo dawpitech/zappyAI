@@ -1,9 +1,10 @@
 from .goal import Goal
-from .find_resources_goal import FindResourceGoal
+from .find_resources_goal import FindResourceGoal 
 
 class SurviveGoal(Goal):
     def __init__(self):
         super().__init__("Survive", priority=10)
+        priority = 10
 
     def is_reached(self, state):
         food = state["inventory"].get("food", 0)
@@ -11,11 +12,9 @@ class SurviveGoal(Goal):
 
     def update_priority(self, state):
         food = state["inventory"].get("food", 0)
-        if food < 300:
+        if food < 500:
             self.priority = 10
-        elif food < 3000:
-            self.priority = 6
-        else:
+        elif food > 6000:
             self.priority = 0
     
     def get_subgoal(self, state):

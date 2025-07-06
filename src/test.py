@@ -78,12 +78,26 @@ def main():
 
     state = State(world_width=world_width, world_height=world_height)
     agent = Agent(state, Planner(ACTIONS))
+
+    all_goals = GOALS
     agent.set_goal(SurviveGoal())
 
     buffer = leftover_buffer
 
     while True:
         try:
+            for goal in all_goals:
+                goal.update_priority(agent.state)
+
+            all_goals.sort(key=lambda g: g.priority, reverse=True)
+
+            for goal in all_goals:
+                if not goal.is_reached(agent.state):
+                    if agent.goal is None or agent.goal.name != goal.name:
+                        agent.set_goal(goal)
+                        print(f"[GOAL] Nouveau goal actif : {goal.name}", file=sys.stderr)
+                    break
+
             agent.tick()
 
             readable, _, _ = select.select([sock], [], [], 0.01)
@@ -102,8 +116,8 @@ def main():
                 cmd = agent.next_command()
                 if cmd:
                     try:
+                        print(f"[info] commande envoyé : {cmd}")
                         sock.sendall((cmd + "\n").encode())
-                        # print(f"[DEBUG] Commande envoyée : {cmd}", file=sys.stderr)
                     except Exception as e:
                         print(f"[ERROR] Envoi échoué : {e}", file=sys.stderr)
 
