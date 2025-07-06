@@ -56,18 +56,7 @@ class Agent:
 
         if message == "ko":
             print(f"[WARN] Action échouée : {self.current_action}", file=sys.stderr)
-            if self.current_action:
-                self.state["tick"] += self.current_action.cost
-                self.state["inventory"]["food"] = max(0, self.state["inventory"].get("food", 0) - self.current_action.cost)
-
-                if hasattr(self.current_action, "on_fail"):
-                    try:
-                        self.state = self.current_action.on_fail(self.state)
-                    except Exception as e:
-                        print(f"[ERROR] Échec dans on_fail() : {e}", file=sys.stderr)
-
-            self.reset_action_state()
-            self.current_plan = []
+            self.handle_ko()
             return
 
         if self.current_action:
@@ -94,9 +83,29 @@ class Agent:
 
     def handle_broadcast(self, direction, text):
         print(f"[INFO] Broadcast ignoré : {direction} => {text}", file=sys.stderr)
+    
+    def handle_ko(self,):
+        if self.current_action:
+            self.state["tick"] += self.current_action.cost
+            self.state["inventory"]["food"] = max(0, self.state["inventory"].get("food", 0) - self.current_action.cost)
+
+            if hasattr(self.current_action, "on_fail"):
+                try:
+                    self.state = self.current_action.on_fail(self.state)
+                except Exception as e:
+                    print(f"[ERROR] Échec dans on_fail() : {e}", file=sys.stderr)
+
+        self.reset_action_state()
+        self.current_plan = []
 
     def handle_eject(self, direction):
-        print(f"[INFO] Eject depuis la direction {direction} (non géré)", file=sys.stderr)
+        orientation = self.state["direction"]
+        pos = self.state["pos"]
+        dx, dy = self._direction_to_offset(direction, orientation)
+
+        new_x = (pos[0] + dx) % self.state["map"].width
+        new_y = (pos[1] + dy) % self.state["map"].height
+        self.state["pos"] = (new_x, new_y)
 
     def next_command(self):
         return self.command_queue.pop(0) if self.command_queue else None
