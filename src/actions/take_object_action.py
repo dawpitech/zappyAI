@@ -45,6 +45,13 @@ class TakeObjectAction(Action):
         new_state["tick"] += self.cost
 
         return new_state
+    
+    def on_fail(self, state):
+        tile = state["map"].get_tile(*state["pos"])
+        if tile:
+            tile["stones"][self.object_name] = 0
+            tile["last_seen"] = -1
+        return state
 
     def __repr__(self):
         return f"<TakeObjectAction {self.object_name} (cost={self.cost})>"

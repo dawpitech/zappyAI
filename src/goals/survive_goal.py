@@ -7,7 +7,7 @@ class SurviveGoal(Goal):
 
     def is_reached(self, state):
         food = state["inventory"].get("food", 0)
-        return food > 10000
+        return food > 6000
 
     def update_priority(self, state):
         food = state["inventory"].get("food", 0)
@@ -20,6 +20,6 @@ class SurviveGoal(Goal):
     
     def get_subgoal(self, state):
         food = state["inventory"].get("food", 0)
-        if food < 10000:
+        if food < 6000:
             return FindResourceGoal("food")
         return None

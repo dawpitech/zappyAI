@@ -59,6 +59,13 @@ class Agent:
             if self.current_action:
                 self.state["tick"] += self.current_action.cost
                 self.state["inventory"]["food"] = max(0, self.state["inventory"].get("food", 0) - self.current_action.cost)
+
+                if hasattr(self.current_action, "on_fail"):
+                    try:
+                        self.state = self.current_action.on_fail(self.state)
+                    except Exception as e:
+                        print(f"[ERROR] Échec dans on_fail() : {e}", file=sys.stderr)
+
             self.reset_action_state()
             self.current_plan = []
             return
