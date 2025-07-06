@@ -1,0 +1,24 @@
+#file: noinspection SpellCheckingInspection
+name: Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  SSH_PUB_KEY:
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKzKKT5xCssZ38UI5VWaPOqW3ldVsg/0tDceTrCFnsd3 github.action@antoinebellanger.fr
+
+jobs:
+  trigger-submodules-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Main Repository CI/CD
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.PAT_ZAPPY }}" \
+            -H "Accept: application/vnd.github.everest-preview+json" \
+            https://api.github.com/repos/dawpitech/zappy/dispatches \
+            -d '{"event_type": "update_submodule"}'
