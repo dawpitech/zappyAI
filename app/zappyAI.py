@@ -16,11 +16,12 @@ def main():
   bot = Trantorien(host, port, team)
   bot.connect()
 
-  print("Looking:", bot.look())
-  print("Forward:", bot.forward())
-  print("Right:", bot.right())
-  print("Forward:", bot.forward())
-  print("Forward:", bot.forward())
+  # print("Looking:", bot.look())
+  # print("Forward:", bot.forward())
+  # print("Right:", bot.right())
+  # print("Forward:", bot.forward())
+  # print("Forward:", bot.forward())
+  print(bot.connect_nbr())
 
   bot.close()
 

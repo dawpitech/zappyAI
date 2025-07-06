@@ -111,6 +111,14 @@ class Trantorien:
     self._send_line(f"Broadcast {message}")
     return self._recv_line().strip()
 
+  def connect_nbr(self) -> str:
+    """
+    @brief Request connection slots informations.
+    @return Server response.
+    """
+    self._send_line("Connect_nbr")
+    return self._recv_line().strip()
+
   def close(self):
     """
     @brief Closes the connection to the server.
