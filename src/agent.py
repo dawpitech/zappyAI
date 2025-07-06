@@ -107,6 +107,35 @@ class Agent:
         new_y = (pos[1] + dy) % self.state["map"].height
         self.state["pos"] = (new_x, new_y)
 
+    def _direction_to_offset(self, dir_num, orientation):
+        base_directions = {
+            1: (0, -1),
+            2: (-1, -1),
+            3: (-1, 0),
+            4: (-1, 1),
+            5: (0, 1),
+            6: (1, 1),
+            7: (1, 0),
+            8: (1, -1)
+        }
+        rotations = {
+            "N": 0,
+            "E": 2,
+            "S": 4,
+            "W": 6
+        }
+
+        def rotate(dx, dy, times):
+            for _ in range(times):
+                dx, dy = -dy, dx
+            return dx, dy
+
+        if dir_num not in base_directions or orientation not in rotations:
+            return (0, 0)
+
+        dx, dy = base_directions[dir_num]
+        return rotate(dx, dy, rotations[orientation])
+
     def next_command(self):
         return self.command_queue.pop(0) if self.command_queue else None
 
