@@ -84,30 +84,30 @@ def main():
 
     while True:
         try:
-                agent.tick()
+            agent.tick()
 
-                readable, _, _ = select.select([sock], [], [], 0.01)
-                for s in readable:
-                    data = s.recv(4096).decode()
-                    if not data:
-                        print("[ERROR] Connexion perdue", file=sys.stderr)
-                        return
-                    buffer += data
-                    while '\n' in buffer:
-                        line, buffer = buffer.split('\n', 1)
-                        agent.receive_message(line.strip())
-                        print(line, file=sys.stderr)
+            readable, _, _ = select.select([sock], [], [], 0.01)
+            for s in readable:
+                data = s.recv(4096).decode()
+                if not data:
+                    print("[ERROR] Connexion perdue", file=sys.stderr)
+                    return
+                buffer += data
+                while '\n' in buffer:
+                    line, buffer = buffer.split('\n', 1)
+                    agent.receive_message(line.strip())
+                    print(line, file=sys.stderr)
 
-                if agent.has_command() and agent.waiting_for_response:
-                    cmd = agent.next_command()
-                    if cmd:
-                        try:
-                            sock.sendall((cmd + "\n").encode())
-                            print(f"[DEBUG] Commande envoyée : {cmd}", file=sys.stderr)
-                        except Exception as e:
-                            print(f"[ERROR] Envoi échoué : {e}", file=sys.stderr)
+            if agent.has_command() and agent.waiting_for_response:
+                cmd = agent.next_command()
+                if cmd:
+                    try:
+                        sock.sendall((cmd + "\n").encode())
+                        # print(f"[DEBUG] Commande envoyée : {cmd}", file=sys.stderr)
+                    except Exception as e:
+                        print(f"[ERROR] Envoi échoué : {e}", file=sys.stderr)
 
-                time.sleep(0.005)
+            time.sleep(0.005)
 
         except KeyboardInterrupt:
             print("[INFO] Interruption utilisateur", file=sys.stderr)
